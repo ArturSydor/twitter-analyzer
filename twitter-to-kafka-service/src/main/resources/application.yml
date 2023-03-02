@@ -1,0 +1,9 @@
+twitter-to-kafka-service:
+  tweets-keywords:
+    - Java
+    - Spring
+    - Microservices
+    - Kafka
+    - Elasticsearch
+    - PostgreSQL
+
