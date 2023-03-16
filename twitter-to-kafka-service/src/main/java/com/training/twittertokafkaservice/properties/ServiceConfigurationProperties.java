@@ -11,4 +11,14 @@ import java.util.List;
 @ConfigurationProperties(prefix = "twitter-to-kafka-service")
 public class ServiceConfigurationProperties {
     private List<String> tweetsKeywords;
+
+    private MockConfig mock;
+
+    @Data
+    public static class MockConfig {
+        private int delay;
+        private int minTextLength;
+        private int maxTextLength;
+    }
+
 }

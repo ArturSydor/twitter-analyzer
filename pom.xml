@@ -23,6 +23,7 @@
     <properties>
         <java.version>17</java.version>
         <twitter4j-stream.version>4.0.7</twitter4j-stream.version>
+        <easy-random-core.version>5.0.0</easy-random-core.version>
     </properties>
 
     <dependencyManagement>
@@ -32,6 +33,13 @@
                 <artifactId>twitter4j-stream</artifactId>
                 <version>${twitter4j-stream.version}</version>
             </dependency>
+
+            <dependency>
+                <groupId>org.jeasy</groupId>
+                <artifactId>easy-random-core</artifactId>
+                <version>${easy-random-core.version}</version>
+            </dependency>
+
         </dependencies>
     </dependencyManagement>
 

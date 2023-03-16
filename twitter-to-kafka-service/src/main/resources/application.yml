@@ -6,4 +6,9 @@ twitter-to-kafka-service:
     - Kafka
     - Elasticsearch
     - PostgreSQL
+  mock:
+    delay: 1000
+    min-text-length: 10
+    max-text-length: 50
+
 
