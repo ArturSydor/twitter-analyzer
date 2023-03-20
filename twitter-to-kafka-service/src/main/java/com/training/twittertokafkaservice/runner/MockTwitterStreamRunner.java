@@ -13,6 +13,7 @@ import twitter4j.TwitterException;
 import twitter4j.TwitterObjectFactory;
 
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Slf4j
 @Component
@@ -68,6 +69,7 @@ public class MockTwitterStreamRunner implements StreamRunner {
         var parameters = new EasyRandomParameters();
         parameters.stringLengthRange(configurationProperties.getMock().getMinTextLength(),
                 configurationProperties.getMock().getMaxTextLength());
+        parameters.randomize(Long.class, () -> ThreadLocalRandom.current().nextLong(1, 1000));
         return parameters;
     }
 }
