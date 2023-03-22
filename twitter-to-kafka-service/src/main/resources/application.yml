@@ -6,9 +6,29 @@ twitter-to-kafka-service:
     - Kafka
     - Elasticsearch
     - PostgreSQL
+
   mock:
     delay: 1000
     min-text-length: 10
     max-text-length: 50
 
+  retry:
+    initial-interval-ms: 1000
+    max-interval-ms: 10000
+    multiplier: 2.0
+    max-attempts: 3
 
+  kafka:
+    schema-registry-url-key: schema.registry.url
+    schema-registry-url: http://localhost:8081
+    twitter-topic:
+      name: twitter-topic
+      partitions: 3
+      replicas: 3
+
+spring:
+  kafka:
+    bootstrap-servers:
+      - localhost:19092
+      - localhost:29092
+      - localhost:39092
