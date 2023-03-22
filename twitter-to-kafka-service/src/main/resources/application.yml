@@ -30,5 +30,19 @@ spring:
   kafka:
     bootstrap-servers:
       - localhost:19092
+    producer:
+      value-serializer: io.confluent.kafka.serializers.KafkaAvroSerializer
+      acks: all
+      compression-type: snappy
+      batch-size: 16384
+      retries: 5
+      properties:
+        delivery:
+          timeout:
+            ms: 3000
+        linger:
+          ms: 1000
+        batch-size:
+          boost-factor: 10
 #      - localhost:29092
 #      - localhost:39092
