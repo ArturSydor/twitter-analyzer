@@ -8,14 +8,19 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.CreateTopicsResult;
 import org.apache.kafka.clients.admin.NewTopic;
+import org.apache.kafka.clients.admin.TopicListing;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.retry.RetryContext;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.retry.support.RetryTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -28,20 +33,22 @@ public class KafkaAdminClients {
 
     private final RetryTemplate retryTemplate;
 
-    private final RetryProperties retryProperties;
-
     private final WebClient webClient;
 
     public void createTopics() {
         try {
-            retryTemplate.execute(this::doCreateTopics);
+            var topicsCreationResult = retryTemplate.execute(this::doCreateTopics);
+            log.debug("Topics creation result: {}", topicsCreationResult);
         } catch (Exception e) {
-            throw new KafkaClientException("Failed to create kafka topics");
+            throw new KafkaClientException("Failed to create kafka topics", e);
         }
     }
 
     private CreateTopicsResult doCreateTopics(RetryContext retryContext) {
-        return adminClient.createTopics(List.of(createTopic(customKafkaProperties.getTwitterTopic())));
+        return adminClient.createTopics(customKafkaProperties.topics()
+                .stream()
+                .map(this::createTopic)
+                .toList());
     }
 
     private NewTopic createTopic(CustomKafkaProperties.Topic topic) {
@@ -50,7 +57,7 @@ public class KafkaAdminClients {
                 topic.getReplicas());
     }
 
-    // TODO add @Retryable
+    @Retryable
     public void checkSchemaRegistryAvailable() {
         webClient.get()
                 .uri(customKafkaProperties.getSchemaRegistryUrl())
@@ -60,8 +67,27 @@ public class KafkaAdminClients {
                 });
     }
 
+    @Retryable
     public void checkTopicsCreated() {
+        try {
+            var missingTopics = new HashSet<String>();
+            var existingTopics = adminClient.listTopics().listings().get()
+                    .stream()
+                    .map(TopicListing::name)
+                    .collect(Collectors.toSet());
 
+            for (var topic : customKafkaProperties.topics()) {
+                if (!existingTopics.contains(topic.getName())) {
+                    missingTopics.add(topic.getName());
+                }
+            }
+
+            if (!missingTopics.isEmpty()) {
+                throw new KafkaClientException("Some topics are missing: " + missingTopics);
+            }
+        } catch (Exception e) {
+            throw new KafkaClientException("Failed to retrieve kafka topics", e);
+        }
     }
 
 }
