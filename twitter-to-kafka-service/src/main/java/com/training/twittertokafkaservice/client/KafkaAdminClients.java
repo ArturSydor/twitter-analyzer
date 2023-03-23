@@ -9,6 +9,8 @@ import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.CreateTopicsResult;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.admin.TopicListing;
+import org.apache.kafka.clients.producer.ProducerConfig;
+import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.retry.RetryContext;
 import org.springframework.retry.annotation.Retryable;
@@ -29,6 +31,8 @@ public class KafkaAdminClients {
 
     private final CustomKafkaProperties customKafkaProperties;
 
+    private final KafkaProperties kafkaProperties;
+
     private final AdminClient adminClient;
 
     private final RetryTemplate retryTemplate;
@@ -38,7 +42,8 @@ public class KafkaAdminClients {
     public void createTopics() {
         try {
             var topicsCreationResult = retryTemplate.execute(this::doCreateTopics);
-            log.debug("Topics creation result: {}", topicsCreationResult);
+            // TODO creae if not exists
+            log.debug("Topics creation result: {}", topicsCreationResult.all().get());
         } catch (Exception e) {
             throw new KafkaClientException("Failed to create kafka topics", e);
         }
@@ -60,7 +65,7 @@ public class KafkaAdminClients {
     @Retryable
     public void checkSchemaRegistryAvailable() {
         webClient.get()
-                .uri(customKafkaProperties.getSchemaRegistryUrl())
+                .uri(kafkaProperties.buildProducerProperties().get("schema.registry.url").toString())
                 .retrieve()
                 .onStatus(HttpStatusCode::is2xxSuccessful, clientResponse -> {
                     throw new KafkaClientException("Schema registry is not available");

@@ -19,8 +19,6 @@ public class CustomKafkaProperties {
     @Getter(AccessLevel.PRIVATE)
     @Setter(AccessLevel.PRIVATE)
     private List<Topic> topics;
-    private String schemaRegistryUrlKey;
-    private String schemaRegistryUrl;
     private Topic twitterTopic;
 
     @Data
